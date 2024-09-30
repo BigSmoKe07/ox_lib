@@ -6,22 +6,15 @@
 ---@return T
 ---@async
 function lib.waitFor(cb, errMessage, timeout)
+    timeout = type(timeout) == 'number' and timeout or 1000 -- Set default timeout to 1000ms
+    local start = GetGameTimer()
+
     local value = cb()
-
-    if value ~= nil then return value end
-
-    if timeout or timeout == nil then
-        if type(timeout) ~= 'number' then timeout = 1000 end
-    end
-
-    local start = timeout and GetGameTimer()
-
-    while value == nil do
+    while not value do
         Wait(0)
 
-        local elapsed = timeout and GetGameTimer() - start
-
-        if elapsed and elapsed > timeout then
+        local elapsed = GetGameTimer() - start
+        if elapsed > timeout then
             return error(('%s (waited %.1fms)'):format(errMessage or 'failed to resolve callback', elapsed), 2)
         end
 
